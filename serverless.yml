@@ -1,0 +1,144 @@
+service: pathmaker-budget-utils-api
+
+package:
+  individually: true
+
+plugins:
+  - serverless-bundle
+  - serverless-offline
+  - serverless-dotenv-plugin
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  stage: prod
+  region: eu-central-1
+
+  environment:
+    tableNameBudget: PathMaker_Budget
+    tableNameReparto: PathMaker_Reparto
+
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:DescribeTable
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource: "arn:aws:dynamodb:eu-central-1:280343356630:table/*"
+    
+    - Effect: Allow
+      Action:
+        - cognito-idp:AdminDisableUser
+        - cognito-idp:AdminEnableUser
+        - cognito-idp:AdminDeleteUser
+        - cognito-idp:ListUsers
+      Resource: "arn:aws:cognito-idp:eu-central-1:280343356630:userpool/eu-central-1_mGorCqMeq"
+
+    - Effect: Allow
+      Action:
+        - s3:PutObject
+        - s3:GetObject
+        - s3:DeleteObject
+      Resource: "arn:aws:s3:::pathmaker-burocracy/public/*"
+
+functions:
+
+#APIS FOR LAMBDA TRIGGERS
+  disableUser:
+    handler: awsUtils.disableUser #OK!
+    events:
+      - http:
+          path: utils/disableuser/{user}
+          method: put
+          cors: true
+          authorizer: aws_iam
+
+  enableUser:
+    handler: awsUtils.enableUser #OK!
+    events:
+      - http:
+          path: utils/enableuser/{user}
+          method: put
+          cors: true
+          authorizer: aws_iam
+
+  listUsers:
+    handler: awsUtils.listUsers #OK!
+    events:
+      - http:
+          path: utils/listusers
+          method: get
+          cors: true
+          authorizer: aws_iam
+
+  deleteUser:
+    handler: awsUtils.deleteUser
+    events:
+      - http:
+          path: utils/deleteuser/{user}
+          method: delete
+          cors: true
+          authorizer: aws_iam
+
+#APIS FOR BUDGET TABLE
+  createBudget:
+    handler: createBudget.main #OK!
+    events:
+      - http:
+          path: budget
+          method: post
+          cors: true
+          authorizer: aws_iam
+          
+  getBudget:
+    handler: getBudget.main #OK!
+    events:
+      - http:
+          path: budget/{id}
+          method: get
+          cors: true
+          authorizer: aws_iam
+  
+  updateBudget:
+    handler: updateBudget.main
+    events:
+      - http:
+          path: budget/{id}
+          method: put
+          cors: true
+          authorizer: aws_iam
+
+  deleteBudget:
+    handler: deleteBudget.main #OK!
+    events:
+      - http:
+          path: budget/{id}
+          method: delete
+          cors: true
+          authorizer: aws_iam
+
+  scanBudget:
+    handler: scanBudget.main #OK!
+    events:
+      - http:
+          path: budget/scan
+          method: get
+          cors: true
+          authorizer: aws_iam
+
+  #APIS FOR EXTRA UTILS
+  importCSV:
+    handler: awsUtils.importCSV
+    events:
+      - http:
+          path: import/csv
+          method: post
+          cors: true
+          authorizer: aws_iam
+
+resources:
+  - ${file(resources/api-gateway-errors.yml)}
