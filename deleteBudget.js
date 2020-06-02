@@ -10,9 +10,13 @@ export async function main(event, context) {
         }
     };
     try{
-        await dynamoLib.call("delete", params);
-        return success({status: true});
+        const result = await dynamoLib.call("delete", params);
+        if(result){
+            return success(result.Item);
+        } else {
+            return failure({message: "Item not found"});
+        }
     } catch(err) {
-        return failure({ status: false });
+        return failure({ message: "Troubles Deleting Item" });
     }
 }

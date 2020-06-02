@@ -5,7 +5,6 @@ import * as dynamoLib from "./libs/dynamodb-lib";
 
 export function disableUser(event, context,callback) {
     var cognitoISP = new AWS.CognitoIdentityServiceProvider();
-
     const params = {
         UserPoolId: "eu-central-1_mGorCqMeq",
         Username: event.pathParameters.user
