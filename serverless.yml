@@ -14,8 +14,8 @@ custom:
     api:
       info:
         version: '1'
-        title: PathMaker REST API
-        description: PathMaker REST API
+        title: PathMaker REST API - Utils & Budget
+        description: PathMaker REST API - Utils & Budget
         contact:
           name: Matteo Giaccone
           url: https://www.pathmaker.it
@@ -107,6 +107,7 @@ custom:
               type: string
             typeOp:
               type: string
+              enum: ["+","-"]
             amount:
               type: string
       -
@@ -422,6 +423,8 @@ functions:
             tags:
               - "Budget"
             description: "POST Method, creates New Budget Entry"
+            requestBody:
+              description: "Amount is a stringified integer, typeOp is + or -"
             requestModels:
               "application/json": CreateBudgetRequestModel
             methodResponses:

@@ -1,65 +1,40 @@
-# Serverless Node.js Starter
+# PathMaker Backend - Budgeting & Utils Services
 
-A Serverless starter that adds ES7 syntax, serverless-offline, linting, environment variables, and unit test support. Part of the [Serverless Stack](http://serverless-stack.com) guide.
+A [Serverless Framework](https://www.serverless.com/) based project with ES7 syntax, serverless-offline, linting, environment variables, unit test support.
 
-[Serverless Node.js Starter](https://github.com/AnomalyInnovations/serverless-nodejs-starter) uses the [serverless-bundle](https://github.com/AnomalyInnovations/serverless-bundle) plugin (an extension of the [serverless-webpack](https://github.com/serverless-heaven/serverless-webpack) plugin) and the [serverless-offline](https://github.com/dherault/serverless-offline) plugin. It supports:
+To implement this, the **following plugins** were needed:
+- [Serverless-bundle](https://github.com/AnomalyInnovations/serverless-bundle) plugin
+- [Serverless-webpack](https://github.com/serverless-heaven/serverless-webpack) plugin, to generate optimized Lambda packages with Webpack. No need to manage WebPack or Babel configs
+- [Serverless-offline](https://github.com/dherault/serverless-offline) plugin, to run API Gateway locally. Use `serverless offline start`
+- [Serverless-aws-documentation](https://github.com/deliveryhero/serverless-aws-documentation) plugin, to generate API Gateway Documentation based on [OAS2](https://swagger.io/specification/v2/)
 
-- **Generating optimized Lambda packages with Webpack**
-- **Use ES7 syntax in your handler functions**
-  - Use `import` and `export`
-- **Run API Gateway locally**
-  - Use `serverless offline start`
-- **Support for unit tests**
-  - Run `npm test` to run your tests
-- **Sourcemaps for proper error messages**
-  - Error message show the correct line numbers
-  - Works in production with CloudWatch
-- **Lint your code with ESLint**
-- **Add environment variables for your stages**
-- **No need to manage Webpack or Babel configs**
+And, for development, the **following resources** were employed
+- `AWS DynamoDB` *(NoSQL Tables, storing information)*
+- `AWS Lambda` *(Calc and integration with DynamoDB table)*
+- `AWS API Gateway` *(API distribution)*
+- `AWS S3` *(both webhosting and file storage)*
+- `AWS CloudFront` *(CDN distribution)*
+- `AWS Route 53` *(Domain register and DNS Routing)*
+- `AWS ACM` *(SSL Certificate Manager)*
+- `AWS Cognito Identity Pool` *(User information storage)*
+- `AWS Cognito Federated Identity` *(User Permissions and clint-side authorization)*
+
+Users, through [Frontend Side](https://github.com/drjack0/pathmaker-client) on [pathmaker.it](https://pathmaker.it), make API calls.
+
+API Gateway takes care of managing these calls and each has a lambda function associated with it.
+Lambdas take care of interacting with the dynamodb tables (or, in particular cases, with other AWS services), carrying out the required operations.
+
+Cause of AWS Limits and in order to obtain a `better and more scalable result`, the structure was divided into `microservices`
 
 ---
 
-### Demo
+### Requirements & Resources
 
-A demo version of this service is hosted on AWS - [`https://z6pv80ao4l.execute-api.us-east-1.amazonaws.com/dev/hello`](https://z6pv80ao4l.execute-api.us-east-1.amazonaws.com/dev/hello)
-
-And here is the ES7 source behind it
-
-``` javascript
-export const hello = async (event, context) => {
-  return {
-    statusCode: 200,
-    body: JSON.stringify({
-      message: `Go Serverless v1.0! ${(await message({ time: 1, copy: 'Your function executed successfully!'}))}`,
-      input: event,
-    }),
-  };
-};
-
-const message = ({ time, ...rest }) => new Promise((resolve, reject) =>
-  setTimeout(() => {
-    resolve(`${rest.copy} (with a delay)`);
-  }, time * 1000)
-);
-```
-
-### Upgrading from v1.x
-
-We have detailed instructions on how to upgrade your app to the v2.0 of the starter if you were using v1.x before. [Read about it here](https://github.com/AnomalyInnovations/serverless-nodejs-starter/releases/tag/v2.0).
-
-### Requirements
-
+- [Serverless Framework](https://www.serverless.com/)
 - [Install the Serverless Framework](https://serverless.com/framework/docs/providers/aws/guide/installation/)
 - [Configure your AWS CLI](https://serverless.com/framework/docs/providers/aws/guide/credentials/)
 
 ### Installation
-
-To create a new Serverless project.
-
-``` bash
-$ serverless install --url https://github.com/AnomalyInnovations/serverless-nodejs-starter --name my-project
-```
 
 Enter the new directory
 
@@ -73,12 +48,30 @@ Install the Node.js packages
 $ npm install
 ```
 
+### Some Informations...
+
+This Repository refers to "Budget" and "utils" Microservices
+
+These documented functions have been coded to manage basic CRUD Operations regarding some AWS-DynamoDB tables and Cognito User Pool: in detail, they allow the user, through specific API calls, to interface with "Budget" DynamoDB Table remotely and handle Users informations and administration.
+
+The calls are encrypted with sigv4 method, therefore they need some specific AWS keys (ACCESS-KEY & SECRET-KEY) for the use, with the latter used to encode the REST calls to the server.
+
+These credentials are obtainable by the user, on the client side, through the **[Amplify](https://docs.amplify.aws/)** library, which interfaces directly with Cognito, creating a specific role, with specific permissions, in such a way as to allow operations
+
+Behind each API call, we find a specific Lambda function that deals with logic and computational calc. Although these Lambda functions cannot be invoked directly during use, **[it is possible to do so during development](#usage)**
+
+More on sigv4 can be found here https://docs.aws.amazon.com/general/latest/gr/signature-version-4.html
+
+Request and response templates can be found in the **[API Documentation](https://api.pathmaker.it)**
+
+---
+
 ### Usage
 
 To run a function on your local
 
 ``` bash
-$ serverless invoke local --function hello
+$ serverless invoke local --function ExampleFunctionHello
 ```
 
 To simulate API Gateway locally using [serverless-offline](https://github.com/dherault/serverless-offline)
@@ -101,42 +94,12 @@ $ serverless deploy function --function hello
 
 #### Running Tests
 
-Run your tests using
+Run your tests using. This feature is not currently enabled, as AWS secondary login credentials are missing
 
 ``` bash
 $ npm test
 ```
 
-We use Jest to run our tests. You can read more about setting up your tests [here](https://facebook.github.io/jest/docs/en/getting-started.html#content).
+Jest is used to run our tests
 
-#### Environment Variables
-
-To add environment variables to your project
-
-1. Rename `env.example` to `.env`.
-2. Add environment variables for your local stage to `.env`.
-3. Uncomment `environment:` block in the `serverless.yml` and reference the environment variable as `${env:MY_ENV_VAR}`. Where `MY_ENV_VAR` is added to your `.env` file.
-4. Make sure to not commit your `.env`.
-
-#### Linting
-
-We use [ESLint](https://eslint.org) to lint your code via the [serverless-bundle](https://github.com/AnomalyInnovations/serverless-bundle) plugin.
-
-You can turn this off by adding the following to your `serverless.yml`.
-
-``` yaml
-custom:
-  bundle:
-    linting: false
-```
-
-To [override the default config](https://eslint.org/docs/user-guide/configuring), add a `.eslintrc.json` file. To ignore ESLint for specific files, add it to a `.eslintignore` file.
-
-### Support
-
-- Open a [new issue](https://github.com/AnomalyInnovations/serverless-nodejs-starter/issues/new) if you've found a bug or have some suggestions.
-- Or submit a pull request!
-
----
-
-This repo is maintained by [Anomaly Innovations](https://anoma.ly); makers of [Seed](https://seed.run) and [Serverless Stack](https://serverless-stack.com).
+#### [API Documentation](https://api.pathmaker.it) can be found here
