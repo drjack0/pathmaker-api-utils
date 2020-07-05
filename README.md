@@ -50,7 +50,7 @@ $ npm install
 
 ### Some Informations...
 
-This Repository refers to "Budget" and "utils" Microservices
+This Repository refers to "Budget" and "Utils" Microservices
 
 These documented functions have been coded to manage basic CRUD Operations regarding some AWS-DynamoDB tables and Cognito User Pool: in detail, they allow the user, through specific API calls, to interface with "Budget" DynamoDB Table remotely and handle Users informations and administration.
 

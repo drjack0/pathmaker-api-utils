@@ -21,7 +21,7 @@ custom:
           url: https://www.pathmaker.it
           email: drjackdevelopment@gmail.com
         license:
-          name: MIT
+          name: plugins from Anomaly Innovations
       tags:
         -
           name: Budget
@@ -303,7 +303,7 @@ functions:
           documentation:
             summary: "LIST ALL USERS - No Request Body needed"
             tags:
-              - "Budget"
+              - "Utils"
             description: "POST Method, creates New Budget Entry"
             requestBody:
               description: "No Request Body Needed"
