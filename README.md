@@ -94,7 +94,7 @@ $ serverless deploy function --function hello
 
 #### Running Tests
 
-Run your tests using. This feature is not currently enabled, as AWS secondary login credentials are missing
+This feature is not currently enabled, as AWS secondary login credentials are missing
 
 ``` bash
 $ npm test
